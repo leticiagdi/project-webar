@@ -131,7 +131,7 @@ export function SettingsPage({ onNavigate }: SettingsPageProps) {
               <Button 
                 onClick={async () => {
                   try {
-                    const response = await fetch('/create-content', { method: 'POST' });
+                    const response = await fetch(`${API_URL}/create-content`, { method: 'POST' });
                     const result = await response.json();
                     alert('✅ ' + (language === 'pt-BR' ? 'Conteúdos iniciais criados com sucesso!' : 'Initial content created successfully!'));
                   } catch (error) {
