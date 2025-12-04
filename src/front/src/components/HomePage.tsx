@@ -4,6 +4,7 @@ import { Page, Structure } from '../App';
 import { StructureCard } from './StructureCard';
 import { useSettings } from '../contexts/SettingsContext';
 import { translations } from '../contexts/translations';
+import { API_URL } from '../api';
 
 interface HomePageProps {
   onNavigate: (page: Page) => void;
@@ -20,7 +21,7 @@ export function HomePage({ onNavigate, onSelectStructure }: HomePageProps) {
   useEffect(() => {
     const fetchFeaturedStructures = async () => {
       try {
-        const response = await fetch('/api/content/');
+        const response = await fetch(`${API_URL}/api/content`);
         if (response.ok) {
           const data = await response.json();
           
