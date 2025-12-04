@@ -1,6 +1,8 @@
 import { ArrowLeft, User, Globe, LogOut, ChevronRight, ChevronDown, Save } from 'lucide-react';
 import { Page } from '../App';
 
+import { API_URL } from '../api'; 
+
 import { Button } from './ui/button';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
@@ -47,7 +49,7 @@ export function SettingsPage({ onNavigate }: SettingsPageProps) {
   const handleSaveProfile = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/user/profile', {
+      const response = await fetch(`${API_URL}/api/user/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
