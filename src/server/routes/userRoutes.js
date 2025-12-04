@@ -3,7 +3,7 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 const router = express.Router();
-import User from '../models/UserModel.js'; // Importa o modelo User
+import User from '../models/userModel.js'; // Importa o modelo User
 
 // === 1. POST /api/user/ - Criar Novo Usuário (Registro) ===
 router.post('/', async (req, res) => {
@@ -178,5 +178,6 @@ router.put('/profile', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+
 
 export default router;
