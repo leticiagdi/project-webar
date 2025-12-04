@@ -3,6 +3,7 @@ import { Search, ArrowLeft } from 'lucide-react';
 import { Page, Structure } from '../App';
 import { StructureCard } from './StructureCard';
 import { Input } from './ui/input';
+import { API_URL } from '../api';
 
 interface StructuresPageProps {
   onNavigate: (page: Page) => void;
@@ -23,7 +24,7 @@ export function StructuresPage({ onNavigate, onSelectStructure }: StructuresPage
     const fetchStructures = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/content/');
+        const response = await fetch(`${API_URL}/api/content/`);
         if (response.ok) {
           const data = await response.json();
           
