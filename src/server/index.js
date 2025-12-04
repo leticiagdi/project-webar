@@ -21,14 +21,23 @@ app.use(express.json());
 
 // --- CORREÇÃO 2: CORS liberado para a Vercel ---
 app.use(cors({
-    origin: [
-        'http://localhost:3000',                  // Permite seu computador
-        'http://localhost:5173',                  // Permite Vite local (às vezes usa essa porta)
-        'https://project-webar-zhas.vercel.app',  // ✅ Permite seu site na Vercel
-        'https://project-webar-zhas.vercel.app/'  // (Garante com e sem a barra no final)
-    ],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'] // Garante que todos os métodos funcionem
+    origin: function (origin, callback) {
+        // Permite acesso se não tiver origem (ex: Postman, App Mobile)
+        if (!origin) return callback(null, true);
+
+        // Verifica se a origem é permitida
+        // Aceita localhost OU qualquer site que termine em .vercel.app
+        if (origin === 'http://localhost:3000' || 
+            origin === 'http://localhost:5173' || 
+            origin.endsWith('.vercel.app')) {
+            return callback(null, true);
+        }
+
+        // Se não for nenhum desses, bloqueia (mas avisa no log)
+        console.log('Bloqueado pelo CORS:', origin);
+        return callback(new Error('Bloqueado pelo CORS: ' + origin));
+    },
+    credentials: true
 }));
 
 const db_url = process.env.MONGODB_URI;
@@ -78,3 +87,4 @@ app.use('/api/user', userRoutes);
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
+
