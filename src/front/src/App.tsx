@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { HomePage } from './components/HomePage';
 import { StructuresPage } from './components/StructuresPage';
 import { StructureDetail } from './components/StructureDetail';
@@ -8,9 +8,18 @@ import { SettingsPage } from './components/SettingsPage';
 import { LoginPage } from './components/LoginPage';
 import { BottomNav } from './components/BottomNav';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { SettingsProvider, useSettings } from './contexts/SettingsContext';
+import { SettingsProvider } from './contexts/SettingsContext';
+import { ARViewer } from './components/ARViewer';
 
-export type Page = 'home' | 'structures' | 'structure-detail' | 'tutorial' | 'info' | 'settings' | 'login';
+export type Page =
+  | 'home'
+  | 'structures'
+  | 'structure-detail'
+  | 'tutorial'
+  | 'info'
+  | 'settings'
+  | 'login'
+  | 'ar';
 
 export interface Structure {
   id: string;
@@ -28,7 +37,19 @@ export interface Structure {
 function MainApp() {
   const [currentPage, setCurrentPage] = useState<Page>('login');
   const [selectedStructure, setSelectedStructure] = useState<Structure | null>(null);
+  const [selectedModel, setSelectedModel] = useState<string | null>(null);
   const { user, isLoading } = useAuth();
+
+  // Detecta ?model=xxxxx.glb e abre o modo AR
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const model = url.searchParams.get("model");
+
+    if (model) {
+      setSelectedModel(model);
+      setCurrentPage("ar");
+    }
+  }, []);
 
   const handleNavigate = (page: Page) => {
     setCurrentPage(page);
@@ -39,7 +60,6 @@ function MainApp() {
     setCurrentPage('structure-detail');
   };
 
-  // Mostrar loading enquanto verifica autenticação
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -52,7 +72,6 @@ function MainApp() {
   }
 
   const renderPage = () => {
-    // Se não está logado e não está na página de login, mostrar login
     if (!user && currentPage !== 'login') {
       return <LoginPage onNavigate={handleNavigate} />;
     }
@@ -60,20 +79,56 @@ function MainApp() {
     switch (currentPage) {
       case 'login':
         return <LoginPage onNavigate={handleNavigate} />;
+
       case 'home':
-        return <HomePage onNavigate={handleNavigate} onSelectStructure={handleSelectStructure} />;
+        return (
+          <HomePage
+            onNavigate={handleNavigate}
+            onSelectStructure={handleSelectStructure}
+          />
+        );
+
       case 'structures':
-        return <StructuresPage onNavigate={handleNavigate} onSelectStructure={handleSelectStructure} />;
+        return (
+          <StructuresPage
+            onNavigate={handleNavigate}
+            onSelectStructure={handleSelectStructure}
+          />
+        );
+
       case 'structure-detail':
-        return <StructureDetail structure={selectedStructure} onNavigate={handleNavigate} onSelectStructure={handleSelectStructure} />;
+        return (
+          <StructureDetail
+            structure={selectedStructure}
+            onNavigate={handleNavigate}
+            onSelectStructure={handleSelectStructure}
+          />
+        );
+
       case 'tutorial':
         return <TutorialPage onNavigate={handleNavigate} />;
+
       case 'info':
         return <InfoPage onNavigate={handleNavigate} />;
+
       case 'settings':
         return <SettingsPage onNavigate={handleNavigate} />;
+
+      case 'ar':
+        if (!selectedModel) {
+          return <p>Nenhum modelo carregado.</p>;
+        }
+        return <ARViewer model={selectedModel} />;
+
       default:
-        return user ? <HomePage onNavigate={handleNavigate} onSelectStructure={handleSelectStructure} /> : <LoginPage onNavigate={handleNavigate} />;
+        return user ? (
+          <HomePage
+            onNavigate={handleNavigate}
+            onSelectStructure={handleSelectStructure}
+          />
+        ) : (
+          <LoginPage onNavigate={handleNavigate} />
+        );
     }
   };
 
