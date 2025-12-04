@@ -9,36 +9,36 @@ import cors from 'cors';
 
 // Carrega as variáveis de ambiente do arquivo .env
 import dotenv from 'dotenv';
-dotenv.config(); // Load environment variables from .env file
+dotenv.config(); 
 
 // Cria uma instância da aplicação Express
-const app = express(); // Create an Express application
+const app = express(); 
 
-// Define a porta onde o servidor irá rodar
-const PORT = 5000; // Define the port
+// --- CORREÇÃO 1: Porta Dinâmica (Obrigatório para o Render) ---
+const PORT = process.env.PORT || 5000; 
 
-// Middleware para interpretar requisições com corpo em JSON
-app.use(express.json()); // Middleware to parse JSON bodies
+app.use(express.json()); 
 
-// Configuração do CORS para permitir requisições do frontend
+// --- CORREÇÃO 2: CORS liberado para a Vercel ---
 app.use(cors({
-    origin: 'http://localhost:3000', // URL do frontend
-    credentials: true
+    origin: [
+        'http://localhost:3000',                  // Permite seu computador
+        'http://localhost:5173',                  // Permite Vite local (às vezes usa essa porta)
+        'https://project-webar-zhas.vercel.app',  // ✅ Permite seu site na Vercel
+        'https://project-webar-zhas.vercel.app/'  // (Garante com e sem a barra no final)
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'] // Garante que todos os métodos funcionem
 }));
 
-// Obtém a URL de conexão do MongoDB das variáveis de ambiente
-// Connect to MongoDB
 const db_url = process.env.MONGODB_URI;
 
-// Tenta conectar ao MongoDB usando a URL obtida
 mongoose.connect(db_url)
     .then(() => {
-        // Se a conexão for bem-sucedida, exibe mensagem de sucesso
         console.log('Connected to MongoDB');
-        console.log('Sistema pronto! Usuários podem se cadastrar normalmente.');
+        console.log('Sistema pronto!');
     })
     .catch((error) => {
-        // Se houver erro na conexão, exibe a mensagem de erro
         console.error('Error connecting to MongoDB:', error);
     });
 
@@ -46,14 +46,10 @@ mongoose.connect(db_url)
 import contentRoutes from './routes/contentRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 
-// Seção para definir as rotas da API
-//rotas
-
 app.get('/', (req, res) => {
     res.send('API do Projeto WebAR está rodando!');
 });
 
-// Rota especial para criar admin (apenas quando necessário)
 app.post('/create-admin', async (req, res) => {
     try {
         const { createAdminUser } = await import('./utils/createAdmin.js');
@@ -64,7 +60,6 @@ app.post('/create-admin', async (req, res) => {
     }
 });
 
-// Rota para criar conteúdos iniciais
 app.post('/create-content', async (req, res) => {
     try {
         const { createInitialContent } = await import('./utils/createInitialContent.js');
@@ -75,14 +70,11 @@ app.post('/create-content', async (req, res) => {
     }
 });
 
-// Middleware para todas as rotas que começam com '/api/' (usando import)
-app.use('/api/content', contentRoutes); // Rotas de conteúdo
-app.use('/api/user', userRoutes); // Rotas de usuário
+// Rotas
+app.use('/api/content', contentRoutes);
+app.use('/api/user', userRoutes);
 
-
-
-// Inicia o servidor Express na porta definida
+// Inicia o servidor
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
-    console.log(`Frontend proxy configured for http://localhost:3000`);
 });
