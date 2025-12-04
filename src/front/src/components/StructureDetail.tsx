@@ -7,6 +7,9 @@ import { StructureCard } from './StructureCard';
 
 import { API_URL } from '../api';
 
+// URL do projeto AR (definida no .env)
+const AR_URL = import.meta.env.VITE_AR_URL;
+
 interface StructureDetailProps {
   structure: Structure | null;
   onNavigate: (page: Page) => void;
@@ -26,14 +29,13 @@ export function StructureDetail({ structure, onNavigate, onSelectStructure }: St
           if (response.ok) {
             const data = await response.json();
             
-            // Mapear e filtrar estruturas relacionadas
             const mappedStructures: Structure[] = data
-              .filter((content: any) => content.marker_key !== structure.id) // Excluir a estrutura atual
-              .slice(0, 2) // Pegar apenas 2 relacionadas
+              .filter((content: any) => content.marker_key !== structure.id)
+              .slice(0, 2)
               .map((content: any) => {
                 const categoryMapping: Record<string, 'DNA' | 'Proteínas' | 'Células' | 'Corpo Humano'> = {
                   'DNA': 'DNA',
-                  'Proteinas': 'Proteínas', 
+                  'Proteinas': 'Proteínas',
                   'Anatomia': 'Células'
                 };
 
@@ -64,6 +66,7 @@ export function StructureDetail({ structure, onNavigate, onSelectStructure }: St
     }
   }, [structure]);
 
+  // Caso não tenha estrutura selecionada
   if (!structure) {
     return (
       <div className="max-w-md mx-auto bg-white min-h-screen p-6">
@@ -75,9 +78,22 @@ export function StructureDetail({ structure, onNavigate, onSelectStructure }: St
     );
   }
 
+  // FUNÇÃO QUE ABRE O AR 
+  const handleOpenAR = () => {
+    const model = structure.molecularStructure;
+
+    if (!model) {
+      alert("Nenhum modelo 3D encontrado para esta estrutura.");
+      return;
+    }
+
+    // Redireciona para o WebAR Viewer
+    window.location.href = `${AR_URL}?model=${model}`;
+  };
+
   return (
     <div className="max-w-md mx-auto bg-white min-h-screen">
-      {/* Banner / Render prévio */}
+      {/* Banner */}
       <div className="relative">
         <div className="aspect-[4/3] w-full overflow-hidden bg-gray-100">
           <ImageWithFallback
@@ -86,6 +102,7 @@ export function StructureDetail({ structure, onNavigate, onSelectStructure }: St
             className="w-full h-full object-cover"
           />
         </div>
+
         <button
           onClick={() => onNavigate('home')}
           className="absolute top-4 left-4 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg"
@@ -103,13 +120,16 @@ export function StructureDetail({ structure, onNavigate, onSelectStructure }: St
         {/* Título */}
         <h1 className="text-gray-900 mb-4">{structure.title}</h1>
 
-        {/* Botão primário AR */}
-        <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white mb-6">
+        {/* Botão que abre AR */}
+        <Button
+          onClick={handleOpenAR}
+          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white mb-6"
+        >
           <Eye className="w-5 h-5 mr-2" />
           Visualizar em AR
         </Button>
 
-        {/* Descrição extensa */}
+        {/* DESCRIÇÃO */}
         <div className="mb-6">
           <h2 className="text-gray-900 mb-2 flex items-center gap-2">
             <Info className="w-5 h-5 text-blue-600" />
@@ -126,7 +146,7 @@ export function StructureDetail({ structure, onNavigate, onSelectStructure }: St
           </div>
         )}
 
-        {/* Estrutura Molecular */}
+        {/* Estrutura Molecular (arquivo GLB) */}
         {structure.molecularStructure && (
           <div className="mb-6 p-4 bg-blue-50 rounded-xl">
             <h3 className="text-gray-900 mb-2">Estrutura Molecular</h3>
@@ -134,7 +154,7 @@ export function StructureDetail({ structure, onNavigate, onSelectStructure }: St
           </div>
         )}
 
-        {/* Funções no organismo */}
+        {/* Funções */}
         {structure.functions && structure.functions.length > 0 && (
           <div className="mb-6">
             <h3 className="text-gray-900 mb-3">Funções no Organismo</h3>
@@ -163,7 +183,7 @@ export function StructureDetail({ structure, onNavigate, onSelectStructure }: St
           </div>
         )}
 
-        {/* Relacionados */}
+        {/* Estruturas relacionadas */}
         {relatedStructures.length > 0 && (
           <div className="mb-8">
             <h3 className="text-gray-900 mb-4">Estruturas Relacionadas</h3>
