@@ -5,6 +5,8 @@ import { Button } from './ui/button';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { StructureCard } from './StructureCard';
 
+import { API_URL } from '../api';
+
 interface StructureDetailProps {
   structure: Structure | null;
   onNavigate: (page: Page) => void;
@@ -20,7 +22,7 @@ export function StructureDetail({ structure, onNavigate, onSelectStructure }: St
     if (structure) {
       const fetchRelatedStructures = async () => {
         try {
-          const response = await fetch('/api/content/');
+          const response = await fetch(`${API_URL}/api/content/`);
           if (response.ok) {
             const data = await response.json();
             
